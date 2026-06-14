@@ -2,11 +2,9 @@
 ##################################################################
 # RSS feed builder pipeline                                      #
 #                                                                #
-# On PR, checks if the feeds.yml file has changed and            #
-# prints whether the output/feeds.opml will be regenerated.      #
-#                                                                #
-# On merge to main, calls the run-parser.sh script in the        #
-# scripts/ directory and regenerates the output/feeds.opml file. #
+# On merge to main, if feeds.yml has changed, pipeline calls the #
+# run-parser.sh script in the scripts/ directory and regenerates #
+# the output/feeds.opml file.                                    #
 ##################################################################
 
 image: alpine:latest
@@ -20,50 +18,7 @@ variables:
   OPML_TITLE: "My RSS Feeds"
 
 stages:
-  - check
-  - generate
   - update
-
-## Check if feeds.yml changed on PR
-check_feeds_pr:
-  stage: check
-  script:
-    - apk add --no-cache git
-    - |
-      if [[ "$CI_COMMIT_BRANCH" != "$CI_DEFAULT_BRANCH" ]]; then
-        if git diff --name-only "$CI_COMMIT_BRANCH" "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" | grep -q "^${FEEDS_FILE}$"; then
-          echo "feeds.yml changed in this PR, OPML will be regenerated on merge to main"
-        else
-          echo "feeds.yml not changed in this PR, OPML will NOT be regenerated on merge"
-        fi
-      else
-        echo "Not a PR, skipping feeds.yml change check"
-      fi
-  rules:
-    - if: "$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH"
-
-## Generate OPML on push to main if feeds.yml changed
-generate_opml_main:
-  stage: generate
-  image: python:3.14-alpine
-  script:
-    - apk add --no-cache git curl bash
-    - |
-      cd $CI_PROJECT_DIR
-
-      ## Ensure uv is installed
-      ./scripts/install/install-uv.sh
-
-      ## Run your wrapper script
-      ./scripts/run-parser.sh \
-        --input "${FEEDS_FILE}" \
-        --output-dir "${OUTPUT_DIR}" \
-        --output-file "${OUTPUT_FILE}" \
-        --timeout "${REQUEST_TIMEOUT}" \
-        --retries "${REQUEST_RETRIES}" \
-        --title "${OPML_TITLE}"
-  rules:
-    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
 
 ## Auto-update feeds OPML and create PR
 update_feeds_opml:
@@ -77,71 +32,76 @@ update_feeds_opml:
       ## Ensure uv is installed
       ./scripts/install/install-uv.sh
 
+      ## Only run on main branch
+      if [[ "$CI_COMMIT_BRANCH" != "$CI_DEFAULT_BRANCH" ]]; then
+        echo "Not on main branch, skipping OPML update"
+        exit 0
+      fi
+
       ## Check if feeds.yml changed between previous main commit and this one
       PREV_COMMIT=$(git rev-parse HEAD@{1})
-      if git diff --name-only "$PREV_COMMIT" "$CI_COMMIT_SHA" | grep -q "^${FEEDS_FILE}$"; then
-        echo "feeds.yml changed - updating OPML and creating PR"
+      if ! git diff --name-only "$PREV_COMMIT" "$CI_COMMIT_SHA" | grep -q "^${FEEDS_FILE}$"; then
+        echo "feeds.yml not changed, skipping OPML update"
+        exit 0
+      fi
 
-        ## Run parser via your wrapper script
-        ./scripts/run-parser.sh \
-          --input "${FEEDS_FILE}" \
-          --output-dir "${OUTPUT_DIR}" \
-          --output-file "${OUTPUT_FILE}" \
-          --timeout "${REQUEST_TIMEOUT}" \
-          --retries "${REQUEST_RETRIES}" \
-          --title "${OPML_TITLE}"
+      echo "feeds.yml changed - updating OPML and creating PR"
 
-        ## Create branch
-        UPDATE_BRANCH="chore/update-feeds-${CI_COMMIT_SHORT_SHA}"
-        git config --global user.email "ci-bot@example.com"
-        git config --global user.name "CI Bot"
-        git checkout -b "$UPDATE_BRANCH"
+      ## Run parser via your wrapper script
+      ./scripts/run-parser.sh \
+        --input "${FEEDS_FILE}" \
+        --output-dir "${OUTPUT_DIR}" \
+        --output-file "${OUTPUT_FILE}" \
+        --timeout "${REQUEST_TIMEOUT}" \
+        --retries "${REQUEST_RETRIES}" \
+        --title "${OPML_TITLE}"
 
-        ## Commit OPML
-        git add "${OUTPUT_DIR}/${OUTPUT_FILE}"
-        git commit -m "chore: update feeds.opml (auto-generated)"
+      ## Create branch
+      UPDATE_BRANCH="chore/update-feeds-${CI_COMMIT_SHORT_SHA}"
+      git config --global user.email "ci-bot@example.com"
+      git config --global user.name "CI Bot"
+      git checkout -b "$UPDATE_BRANCH"
 
-        ## Push branch
-        git push -u origin "$UPDATE_BRANCH"
+      ## Commit OPML
+      git add "${OUTPUT_DIR}/${OUTPUT_FILE}"
+      git commit -m "chore: update feeds.opml (auto-generated)"
 
-        ## Create PR
-        PR_TITLE="chore: update feeds.opml (auto-generated)"
-        PR_DESC="This PR auto-updates feeds.opml because feeds.yml changed on main."
+      ## Push branch
+      git push -u origin "$UPDATE_BRANCH"
 
-        curl -X POST \
+      ## Create PR
+      PR_TITLE="chore: update feeds.opml (auto-generated)"
+      PR_DESC="This PR auto-updates feeds.opml because feeds.yml changed on main."
+
+      curl -X POST \
+        -H "Authorization: Bearer ${GITLAB_TOKEN}" \
+        -H "Content-Type: application/json" \
+        "https://${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests" \
+        -d "{
+          \"source_branch\": \"${UPDATE_BRANCH}\",
+          \"target_branch\": \"${CI_DEFAULT_BRANCH}\",
+          \"title\": \"${PR_TITLE}\",
+          \"description\": \"${PR_DESC}\",
+          \"remove_source_branch\": true
+        }"
+
+      ## Auto-merge PR
+      MR_IID=$(curl -s \
+        -H "Authorization: Bearer ${GITLAB_TOKEN}" \
+        "https://${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests?source_branch=${UPDATE_BRANCH}" \
+        | jq -r '.[0].iid')
+
+      if [[ -n "$MR_IID" && "$MR_IID" != "null" ]]; then
+        curl -X PUT \
           -H "Authorization: Bearer ${GITLAB_TOKEN}" \
           -H "Content-Type: application/json" \
-          "https://${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests" \
-          -d "{
-            \"source_branch\": \"${UPDATE_BRANCH}\",
-            \"target_branch\": \"${CI_DEFAULT_BRANCH}\",
-            \"title\": \"${PR_TITLE}\",
-            \"description\": \"${PR_DESC}\",
-            \"remove_source_branch\": true
-          }"
-
-        ## Auto-merge PR
-        MR_IID=$(curl -s \
-          -H "Authorization: Bearer ${GITLAB_TOKEN}" \
-          "https://${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests?source_branch=${UPDATE_BRANCH}" \
-          | jq -r '.[0].iid')
-
-        if [[ -n "$MR_IID" && "$MR_IID" != "null" ]]; then
-          curl -X PUT \
-            -H "Authorization: Bearer ${GITLAB_TOKEN}" \
-            -H "Content-Type: application/json" \
-            "https://${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}/merge" \
-            -d "{\"should_remove_source_branch\": true}"
-        else
-          echo "[WARNING] Could not find MR for branch ${UPDATE_BRANCH}"
-        fi
+          "https://${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}/merge" \
+          -d "{\"should_remove_source_branch\": true}"
       else
-        echo "feeds.yml not changed, skipping OPML update"
+        echo "[WARNING] Could not find MR for branch ${UPDATE_BRANCH}"
       fi
   rules:
     - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
-  needs:
-    - generate_opml_main
   variables:
     GITLAB_TOKEN: "${GITLAB_TOKEN}"
     GITLAB_HOST: "${GITLAB_HOST}"
