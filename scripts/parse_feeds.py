@@ -368,6 +368,7 @@ def return_generator(
 def main():
     args = parse_args()
 
+    print("Building OPMLGenerator class")
     try:
         generator: OPMLGenerator = return_generator(
             input_path=args.input,
@@ -377,7 +378,11 @@ def main():
             max_retries=args.retries,
             opml_title=args.title,
         )
+    except Exception as exc:
+        raise
 
+    print("Generating OPML file")
+    try:
         generator.run()
     except Exception as exc:
         raise
