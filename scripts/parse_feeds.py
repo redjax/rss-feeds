@@ -31,6 +31,59 @@ import feedparser
 from lxml import etree as ET
 from pathlib import Path
 import yaml
+import argparse
+
+
+def parse_args():
+    """Parse command-line arguments using argparse."""
+
+    parser = argparse.ArgumentParser(
+        description="Generate an OPML file from a feeds.yml configuration file."
+    )
+
+    parser.add_argument(
+        "--input",
+        type=str,
+        default="feeds.yml",
+        help="Path to the input feeds.yml file (default: feeds.yml)",
+    )
+
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="output",
+        help="Directory to write the output OPML file (default: output)",
+    )
+
+    parser.add_argument(
+        "--output-file",
+        type=str,
+        default="feeds.opml",
+        help="Name of the output OPML file (default: feeds.opml)",
+    )
+
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=10,
+        help="Request timeout in seconds (default: 10)",
+    )
+
+    parser.add_argument(
+        "--retries",
+        type=int,
+        default=3,
+        help="Maximum number of retry attempts for failed requests (default: 3)",
+    )
+
+    parser.add_argument(
+        "--title",
+        type=str,
+        default="My RSS Feeds",
+        help="Title for the OPML <head> section (default: My RSS Feeds)",
+    )
+
+    return parser.parse_args()
 
 
 class OPMLGenerator:
@@ -291,14 +344,43 @@ class OPMLGenerator:
         return opml_path
 
 
-def main():
-    """Main entry point: create OPMLGenerator and run the pipeline.
+def return_generator(
+    input_path: str,
+    output_dir: str,
+    output_filename: str,
+    timeout: int,
+    max_retries: int,
+    opml_title: str,
+) -> OPMLGenerator:
+    """Return an initialized OPMLGenerator class."""
+    generator = OPMLGenerator(
+        input_path=input_path,
+        output_dir=output_dir,
+        output_filename=output_filename,
+        timeout=timeout,
+        max_retries=max_retries,
+        opml_title=opml_title,
+    )
 
-    Creates an OPMLGenerator with default configuration and runs the full
-    generation pipeline, loading feeds.yml and writing output/feeds.opml.
-    """
-    generator = OPMLGenerator()
-    generator.run()
+    return generator
+
+
+def main():
+    args = parse_args()
+
+    try:
+        generator: OPMLGenerator = return_generator(
+            input_path=args.input,
+            output_dir=args.output_dir,
+            output_filename=args.output_file,
+            timeout=args.timeout,
+            max_retries=args.retries,
+            opml_title=args.title,
+        )
+
+        generator.run()
+    except Exception as exc:
+        raise
 
 
 if __name__ == "__main__":
