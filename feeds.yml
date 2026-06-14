@@ -1,0 +1,36 @@
+---
+#############################################################################
+# This file is a manually edited list of all the RSS feeds I want to track. #
+#                                                                           #
+# It is used as the source file for the feed parser script.                 #
+#############################################################################
+version: 1
+
+feeds:
+  - url: https://xkcd.com/rss.xml
+    folder_path: ["Happy Feed"]
+    enabled: true
+  - url: https://feeds.bbci.co.uk/news/rss.xml
+    folder_path: ["News / Doom & Gloom"]
+    enabled: true
+  - url: https://news.ycombinator.com/rss
+    folder_path: ["Tech"]
+    enabled: true
+  - url: https://www.wired.com/feed/rss
+    folder_path: ["Tech"]
+    enabled: true
+  - url: https://www.bellingcat.com/feed/
+    folder_path: ["News / Doom & Gloom"]
+    enabled: true
+  - url: https://krebsonsecurity.com/feed/
+    folder_path: ["Cybersecurity"]
+    enabled: true
+  - url: https://www.zdnet.com/topic/open-source/rss.xml
+    folder_path: ["Tech"]
+    enabled: true
+  - url: https://www.malwarebytes.com/blog/feed/index.xml
+    folder_path: ["Cybersecurity"]
+    enabled: true
+  - url: https://www.bleepingcomputer.com/feed/
+    folder_path: ["Cybersecurity"]
+    enabled: true
