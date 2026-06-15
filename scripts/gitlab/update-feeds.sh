@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+## Export GitLab variables from the job environment
+export GITLAB_TOKEN="${GITLAB_TOKEN:-}"
+export GITLAB_HOST="${GITLAB_HOST:-}"
+
 THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd "${THIS_DIR}/../.." && pwd -P)"
 cd "${REPO_ROOT}"

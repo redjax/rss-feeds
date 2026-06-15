@@ -34,8 +34,6 @@ update_feeds_opml_auto:
     - when: never
   before_script:
     - apk add --no-cache git curl bash jq coreutils
-    - export GITLAB_TOKEN="$GITLAB_TOKEN"
-    - export GITLAB_HOST="$GITLAB_HOST"
   script:
     - chmod +x scripts/gitlab/update-feeds.sh
     - ./scripts/gitlab/update-feeds.sh
@@ -49,8 +47,6 @@ update_feeds_opml_manual:
       when: manual
   before_script:
     - apk add --no-cache git curl bash jq coreutils
-    - export GITLAB_TOKEN="$GITLAB_TOKEN"
-    - export GITLAB_HOST="$GITLAB_HOST"
   script:
     - chmod +x scripts/gitlab/update-feeds.sh
     - ./scripts/gitlab/update-feeds.sh
