@@ -34,19 +34,20 @@ fi
   --retries "${REQUEST_RETRIES}" \
   --opml-title "${OPML_TITLE}"
 
-## Check if feeds.opml was created
 if [[ ! -f "${OUTPUT_DIR}/${OUTPUT_FILE}" ]]; then
   echo "[ERROR] OPML file was not created: ${OUTPUT_DIR}/${OUTPUT_FILE}" >&2
   exit 1
 fi
 
-## Compare with existing file
-if git diff --quiet "${OUTPUT_DIR}/${OUTPUT_FILE}"; then
+## If the file is not in git, it's a change; otherwise compare to HEAD
+if ! git ls-files "${OUTPUT_DIR}/${OUTPUT_FILE}" | grep -q "${OUTPUT_DIR}/${OUTPUT_FILE}"; then
+  echo "feeds.opml is not tracked in git - treating as changed"
+elif git diff --quiet "${OUTPUT_DIR}/${OUTPUT_FILE}"; then
   echo "feeds.opml did not change, exiting successfully"
   exit 0
+else
+  echo "feeds.opml changed - creating branch and PR"
 fi
-
-echo "feeds.opml changed, committing changes and creating PR"
 
 chmod +x scripts/gitlab/commit-changes.sh
 ./scripts/gitlab/commit-changes.sh
