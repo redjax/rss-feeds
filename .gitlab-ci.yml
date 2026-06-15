@@ -30,13 +30,10 @@ update_feeds_opml_auto:
         - feeds.yml
     - when: never
   before_script:
-    - apk add --no-cache git curl bash jq
+    - apk add --no-cache git curl bash jq coreutils
   script:
     - chmod +x scripts/gitlab/update-feeds.sh
-    - ./scripts/gitlab/update-feeds.sh
-  variables:
-    GITLAB_TOKEN: "${GITLAB_TOKEN}"
-    GITLAB_HOST: "${GITLAB_HOST}"
+    - GITLAB_TOKEN="$GITLAB_TOKEN" GITLAB_HOST="$GITLAB_HOST" ./scripts/gitlab/update-feeds.sh
 
 ## Auto-update feeds OPML and create PR (manual trigger)
 update_feeds_opml_manual:
@@ -46,10 +43,7 @@ update_feeds_opml_manual:
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: manual
   before_script:
-    - apk add --no-cache git curl bash jq
+    - apk add --no-cache git curl bash jq coreutils
   script:
     - chmod +x scripts/gitlab/update-feeds.sh
-    - ./scripts/gitlab/update-feeds.sh
-  variables:
-    GITLAB_TOKEN: "${GITLAB_TOKEN}"
-    GITLAB_HOST: "${GITLAB_HOST}"
+    - GITLAB_TOKEN="$GITLAB_TOKEN" GITLAB_HOST="$GITLAB_HOST" ./scripts/gitlab/update-feeds.sh

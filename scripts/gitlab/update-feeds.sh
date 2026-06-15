@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+## Load GitLab variables from the job environment
+: "${GITLAB_TOKEN:?GITLAB_TOKEN is missing}"
+: "${GITLAB_HOST:?GITLAB_HOST is missing}"
+
 THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-REPO_ROOT=$(realpath -m "${THIS_DIR}/../../../")
+REPO_ROOT="$(cd "${THIS_DIR}/../../" && pwd -P)"
 cd "${REPO_ROOT}"
+
+## Ensure .local/bin is in PATH
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${GITLAB_HOST}/${CI_PROJECT_PATH}.git"
 
 FEEDS_FILE="${FEEDS_FILE:-feeds.yml}"
 OUTPUT_DIR="${OUTPUT_DIR:-output}"
@@ -22,26 +33,27 @@ fi
 
 ## Run parser via your wrapper script
 ./scripts/run-parser.sh \
-  --input "${FEEDS_FILE}" \
+  --input-file "${FEEDS_FILE}" \
   --output-dir "${OUTPUT_DIR}" \
   --output-file "${OUTPUT_FILE}" \
   --timeout "${REQUEST_TIMEOUT}" \
   --retries "${REQUEST_RETRIES}" \
-  --title "${OPML_TITLE}"
+  --opml-title "${OPML_TITLE}"
 
-## Check if feeds.opml was created
 if [[ ! -f "${OUTPUT_DIR}/${OUTPUT_FILE}" ]]; then
   echo "[ERROR] OPML file was not created: ${OUTPUT_DIR}/${OUTPUT_FILE}" >&2
   exit 1
 fi
 
-## Compare with existing file
-if git diff --quiet "${OUTPUT_DIR}/${OUTPUT_FILE}"; then
+## If the file is not in git, it's a change; otherwise compare to HEAD
+if ! git ls-files "${OUTPUT_DIR}/${OUTPUT_FILE}" | grep -q "${OUTPUT_DIR}/${OUTPUT_FILE}"; then
+  echo "feeds.opml is not tracked in git - treating as changed"
+elif git diff --quiet "${OUTPUT_DIR}/${OUTPUT_FILE}"; then
   echo "feeds.opml did not change, exiting successfully"
   exit 0
+else
+  echo "feeds.opml changed - creating branch and PR"
 fi
 
-echo "feeds.opml changed, committing changes and creating PR"
-
 chmod +x scripts/gitlab/commit-changes.sh
-./scripts/gitlab/commit-changes.sh
+GITLAB_TOKEN="$GITLAB_TOKEN" GITLAB_HOST="$GITLAB_HOST" ./scripts/gitlab/commit-changes.sh
