@@ -76,3 +76,9 @@ feeds:
   - url: https://www.kenmuse.com/rss/index.xml
     folder_path: ["Personal Blogs"]
     enabled: true
+  - url: https://blogs.windows.com/windowsdeveloper/feed/
+    folder_path: ["Microsoft"]
+    enabled: true
+  - url: https://feeds.feedburner.com/Buttersafe
+    folder_path: ["Happy Feed"]
+    enabled: true
