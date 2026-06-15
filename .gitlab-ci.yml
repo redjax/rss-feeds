@@ -17,9 +17,6 @@ variables:
   REQUEST_RETRIES: "3"
   OPML_TITLE: "My RSS Feeds"
 
-  GITLAB_TOKEN: "${GITLAB_TOKEN}"
-  GITLAB_HOST: "${GITLAB_HOST}"
-
 stages:
   - update
 
