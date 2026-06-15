@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-## Export GitLab variables from the job environment
-export GITLAB_TOKEN="${GITLAB_TOKEN:-}"
-export GITLAB_HOST="${GITLAB_HOST:-}"
+## Load GitLab variables from the job environment
+: "${GITLAB_TOKEN:?GITLAB_TOKEN is missing}"
+: "${GITLAB_HOST:?GITLAB_HOST is missing}"
 
 THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-REPO_ROOT="$(cd "${THIS_DIR}/../.." && pwd -P)"
+REPO_ROOT="$(cd "${THIS_DIR}/../../" && pwd -P)"
 cd "${REPO_ROOT}"
 
 ## Ensure .local/bin is in PATH
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
+
+git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${GITLAB_HOST}/${CI_PROJECT_PATH}.git"
 
 FEEDS_FILE="${FEEDS_FILE:-feeds.yml}"
 OUTPUT_DIR="${OUTPUT_DIR:-output}"
@@ -54,4 +56,4 @@ else
 fi
 
 chmod +x scripts/gitlab/commit-changes.sh
-./scripts/gitlab/commit-changes.sh
+GITLAB_TOKEN="$GITLAB_TOKEN" GITLAB_HOST="$GITLAB_HOST" ./scripts/gitlab/commit-changes.sh

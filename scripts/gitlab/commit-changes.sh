@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-## Export GitLab variables from the job environment
-export GITLAB_TOKEN="${GITLAB_TOKEN:-}"
-export GITLAB_HOST="${GITLAB_HOST:-}"
+## Load GitLab variables from the job environment
+: "${GITLAB_TOKEN:?GITLAB_TOKEN is missing}"
+: "${GITLAB_HOST:?GITLAB_HOST is missing}"
+: "${CI_PROJECT_PATH:?CI_PROJECT_PATH is missing}"
+: "${CI_PROJECT_ID:?CI_PROJECT_ID is missing}"
+: "${CI_COMMIT_SHORT_SHA:?CI_COMMIT_SHORT_SHA is missing}"
+: "${CI_DEFAULT_BRANCH:=main}"
 
 THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd "${THIS_DIR}/../../" && pwd -P)"
@@ -14,17 +18,10 @@ if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-## Ensure git uses the project access token
-git remote set-url origin "https://gitlab-ci-token:${GITLAB_TOKEN}@${GITLAB_HOST}/${CI_PROJECT_PATH}.git"
+git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${GITLAB_HOST}/${CI_PROJECT_PATH}.git"
 
 OUTPUT_DIR="${OUTPUT_DIR:-output}"
 OUTPUT_FILE="${OUTPUT_FILE:-feeds.opml}"
-
-GITLAB_TOKEN="${GITLAB_TOKEN}"
-GITLAB_HOST="${GITLAB_HOST}"
-CI_PROJECT_ID="${CI_PROJECT_ID}"
-CI_COMMIT_SHORT_SHA="${CI_COMMIT_SHORT_SHA:-$(git rev-parse --short HEAD)}"
-CI_DEFAULT_BRANCH="${CI_DEFAULT_BRANCH:-main}"
 
 UPDATE_BRANCH="chore/update-feeds-${CI_COMMIT_SHORT_SHA}"
 
