@@ -34,6 +34,10 @@ from pathlib import Path
 import yaml
 import argparse
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import json
+import hashlib
+
 USER_AGENT: dict = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
 }
@@ -133,6 +137,26 @@ class OPMLGenerator:
         self.max_retries = max_retries
         self.opml_title = opml_title
 
+        ## cache system
+        self.cache_dir = Path(".cache")
+        self.cache_file = self.cache_dir / "feeds.cache.json"
+        self.cache_ttl = 60 * 60 * 24 * 7  # 7 days
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+    def _cache_key(self, url: str) -> str:
+        return hashlib.sha256(url.encode()).hexdigest()
+
+    def load_cache(self) -> dict:
+        if not self.cache_file.exists():
+            return {}
+        try:
+            return json.loads(self.cache_file.read_text())
+        except Exception:
+            return {}
+
+    def save_cache(self, cache: dict):
+        self.cache_file.write_text(json.dumps(cache, indent=2))
+
     def fetch_feed(self, url: str) -> feedparser.FeedParserDict | None:
         """Retrieve and parse an RSS/Atom feed from a URL.
 
@@ -154,11 +178,10 @@ class OPMLGenerator:
 
                 status = resp.status_code
 
-                # Permanent failures
+                ## Permanent failures
                 if status in (401, 403, 404, 410):
                     print(
-                        f"[WARN] {url} returned HTTP {status}; "
-                        "using fallback metadata"
+                        f"[WARN] {url} returned HTTP {status}; using fallback metadata"
                     )
                     return None
 
@@ -168,8 +191,7 @@ class OPMLGenerator:
 
                 if getattr(parsed, "bozo", False):
                     print(
-                        f"[WARN] Feed parse issue for {url}: "
-                        f"{getattr(parsed, 'bozo_exception', '')}"
+                        f"[WARN] Feed parse issue for {url}: {getattr(parsed, 'bozo_exception', '')}"
                     )
 
                 return parsed
@@ -182,9 +204,7 @@ class OPMLGenerator:
                     wait = 2**attempt
 
                     print(
-                        f"[WARN] HTTP {status} for {url}; "
-                        f"retrying in {wait}s "
-                        f"({attempt}/{self.max_retries})"
+                        f"[WARN] HTTP {status} for {url}; retrying in {wait}s ({attempt}/{self.max_retries})"
                     )
 
                     time.sleep(wait)
@@ -198,9 +218,7 @@ class OPMLGenerator:
 
                 if attempt < self.max_retries:
                     print(
-                        f"[WARN] Request failed for {url}: {exc}; "
-                        f"retrying in {wait}s "
-                        f"({attempt}/{self.max_retries})"
+                        f"[WARN] Request failed for {url}: {exc}; retrying in {wait}s ({attempt}/{self.max_retries})"
                     )
 
                     time.sleep(wait)
@@ -215,19 +233,44 @@ class OPMLGenerator:
 
         return None
 
+    def fetch_feed_cached(self, url: str, cache: dict):
+        key = self._cache_key(url)
+        now = time.time()
+
+        if key in cache:
+            entry = cache[key]
+            if now - entry.get("ts", 0) < self.cache_ttl:
+                return entry.get("data")
+
+        data = self.fetch_feed(url)
+
+        cache[key] = {
+            "ts": now,
+            "data": data,
+        }
+
+        return data
+
+    def fetch_all_feeds(self, feeds: list[dict]) -> dict[str, dict]:
+        cache = self.load_cache()
+        results = {}
+
+        urls = [f["url"] for f in feeds if isinstance(f, dict) and f.get("url")]
+
+        def worker(url):
+            return url, self.fetch_feed_cached(url, cache)
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(worker, url) for url in urls]
+
+            for fut in as_completed(futures):
+                url, data = fut.result()
+                results[url] = data
+
+        self.save_cache(cache)
+        return results
+
     def slugify(self, url: str) -> str:
-        """Generate a URL-safe slug from a feed URL.
-
-        Extracts the domain from the URL, converts to lowercase, removes non-alphanumeric
-        characters, and returns a slug suitable for use as an ID.
-
-        Params:
-            url (str): The feed URL to slugify.
-
-        Returns:
-            str: A URL-safe slug (e.g., "example-com" from "https://example.com/feed.xml").
-                 Returns "feed" if the slug is empty.
-        """
         domain = re.sub(r"^https?://", "", url.lower())
         domain = re.sub(r"/.*$", "", domain)
 
@@ -237,19 +280,7 @@ class OPMLGenerator:
         return slug or "feed"
 
     def canonical_homepage(self, url: str) -> str:
-        """Extract the canonical homepage URL from a feed URL.
-
-        Converts a feed URL (e.g., https://example.com/feed.xml) into its likely
-        homepage URL (e.g., https://example.com/) by removing path components
-        and ensuring https:// prefix.
-
-        Params:
-            url (str): The feed URL to convert.
-
-        Returns:
-            str: The canonical homepage URL with https:// prefix.
-        """
-        link = re.sub(r"/[^/]*\\.xml$", "/", url)
+        link = re.sub(r"/[^/]*\.xml$", "/", url)
         link = re.sub(r"/[^/]*$", "/", link)
         link = re.sub(r"^https?://", "https://", link)
 
@@ -271,6 +302,10 @@ class OPMLGenerator:
                 cleaned.append(part)
 
         return tuple(cleaned or ["Uncategorized"])
+
+    # -----------------------------
+    # OPML generation
+    # -----------------------------
 
     def generate_opml_generic(self, feeds: list[dict]) -> str:
         """Generate a generic OPML 2.0 document from a list of feeds.
@@ -349,21 +384,19 @@ class OPMLGenerator:
         for f in cleaned_feeds:
             insert(f["_folder_path"], f)
 
-        ## Recursive OPML builder
-        def build_outline(parent_xml, subtree: dict, path: tuple[str, ...]):
-            ## Folders first
+        feed_map = self.fetch_all_feeds(feeds)
+
+        def build_outline(parent_xml, subtree: dict):
             for key in sorted(k for k in subtree.keys() if k != "_feeds"):
                 folder_xml = ET.SubElement(parent_xml, "outline")
                 folder_xml.attrib["text"] = key
                 folder_xml.attrib["title"] = key
+                build_outline(folder_xml, subtree[key])
 
-                build_outline(folder_xml, subtree[key], path + (key,))
-
-            ## Feeds in this node
             for f in subtree.get("_feeds", []):
                 url = f["url"]
 
-                feed_obj = self.fetch_feed(url)
+                feed_obj = feed_map.get(url) or {}
                 feed_data = (feed_obj or {}).get("feed", {})
 
                 name = (
@@ -385,22 +418,11 @@ class OPMLGenerator:
                 o.attrib["xmlUrl"] = url
                 o.attrib["htmlUrl"] = site_url
 
-        build_outline(body, tree, ())
+        build_outline(body, tree)
 
         return ET.tostring(root, pretty_print=True, encoding="unicode")
 
     def load_feeds(self) -> list[dict]:
-        """Load feeds from the input YAML file.
-
-        Reads the feeds.yml configuration file and extracts the feeds list.
-
-        Returns:
-            list[dict]: List of feed dictionaries from the YAML file.
-
-        Raises:
-            FileNotFoundError: If the input file doesn't exist.
-            yaml.YAMLError: If the YAML file is malformed.
-        """
         with open(self.input_path, "r", encoding="utf-8") as fh:
             data = yaml.safe_load(fh)
 
@@ -441,12 +463,11 @@ class OPMLGenerator:
             print(f"OPML written to {opml_path}")
         """
         feeds = self.load_feeds()
-        generic_opml = self.generate_opml_generic(feeds)
-        opml_path = self.write_opml(generic_opml)
+        opml = self.generate_opml_generic(feeds)
+        path = self.write_opml(opml)
 
-        print(f"Generic OPML written to {opml_path}")
-
-        return opml_path
+        print(f"Generic OPML written to {path}")
+        return path
 
 
 def return_generator(
@@ -457,8 +478,7 @@ def return_generator(
     max_retries: int,
     opml_title: str,
 ) -> OPMLGenerator:
-    """Return an initialized OPMLGenerator class."""
-    generator = OPMLGenerator(
+    return OPMLGenerator(
         input_path=input_path,
         output_dir=output_dir,
         output_filename=output_filename,
@@ -467,30 +487,22 @@ def return_generator(
         opml_title=opml_title,
     )
 
-    return generator
-
 
 def main():
     args = parse_args()
 
     print("Building OPMLGenerator class")
-    try:
-        generator: OPMLGenerator = return_generator(
-            input_path=args.input,
-            output_dir=args.output_dir,
-            output_filename=args.output_file,
-            timeout=args.timeout,
-            max_retries=args.retries,
-            opml_title=args.title,
-        )
-    except Exception as exc:
-        raise
+    generator = return_generator(
+        input_path=args.input,
+        output_dir=args.output_dir,
+        output_filename=args.output_file,
+        timeout=args.timeout,
+        max_retries=args.retries,
+        opml_title=args.title,
+    )
 
     print("Generating OPML file")
-    try:
-        generator.run()
-    except Exception as exc:
-        raise
+    generator.run()
 
 
 if __name__ == "__main__":
