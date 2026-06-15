@@ -33,7 +33,7 @@ update_feeds_opml_auto:
     - apk add --no-cache git curl bash jq coreutils
   script:
     - chmod +x scripts/gitlab/update-feeds.sh
-    - ./scripts/gitlab/update-feeds.sh
+    - GITLAB_TOKEN="$GITLAB_TOKEN" GITLAB_HOST="$GITLAB_HOST" ./scripts/gitlab/update-feeds.sh
 
 ## Auto-update feeds OPML and create PR (manual trigger)
 update_feeds_opml_manual:
@@ -46,4 +46,4 @@ update_feeds_opml_manual:
     - apk add --no-cache git curl bash jq coreutils
   script:
     - chmod +x scripts/gitlab/update-feeds.sh
-    - ./scripts/gitlab/update-feeds.sh
+    - GITLAB_TOKEN="$GITLAB_TOKEN" GITLAB_HOST="$GITLAB_HOST" ./scripts/gitlab/update-feeds.sh
