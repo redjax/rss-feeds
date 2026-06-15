@@ -5,7 +5,6 @@ THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(realpath -m "${THIS_DIR}/..")"
 PARSER_DIR="${REPO_ROOT}/scripts/parser"
 INSTALL_UV_SCRIPT="${REPO_ROOT}/scripts/install/install-uv.sh"
-PARSE_SCRIPT="${PARSER_DIR}/parse_feeds.py"
 
 CWD="$(pwd)"
 
@@ -103,14 +102,18 @@ if [[ ! -f "${REPO_ROOT}/${FEEDS_FILE}" ]]; then
   exit 1
 fi
 
-parse_cmd=(uv run "${PARSE_SCRIPT}")
-parse_cmd+=(--input "${REPO_ROOT}/${FEEDS_FILE}")
-parse_cmd+=(--output-file "${REPO_ROOT}/${OUTPUT_FILE}")
-parse_cmd+=(--timeout "${REQUEST_TIMEOUT}")
-parse_cmd+=(--retries "${REQUEST_RETRIES}")
-parse_cmd+=(--title "${OPML_TITLE}")
+parse_cmd=(
+  uv run
+  --project "${PARSER_DIR}"
+  python "${PARSER_DIR}/parse_feeds.py"
+  --input "${REPO_ROOT}/${FEEDS_FILE}"
+  --output-file "${REPO_ROOT}/${OUTPUT_FILE}"
+  --timeout "${REQUEST_TIMEOUT}"
+  --retries "${REQUEST_RETRIES}"
+  --title "${OPML_TITLE}"
+)
 
-echo "Generating OPML → ${OUTPUT_FILE}"
+echo "Generating OPML, outputting to: ${OUTPUT_FILE}"
 echo
 
 if [[ "${DRY_RUN}" == "true" ]]; then
