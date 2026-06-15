@@ -1,17 +1,16 @@
 ---
-##################################################################
-# RSS feed builder pipeline                                      #
-#                                                                #
-# On merge to main, if feeds.yml has changed, pipeline calls the #
-# run-parser.sh script in the scripts/ directory and regenerates #
-# the output/feeds.opml file.                                    #
-##################################################################
+#######################################################################
+# RSS feed builder pipeline                                           #
+#                                                                     #
+# On merge to main, if .raw/feeds.yml has changed, pipeline calls the #
+# run-parser.sh script in the scripts/ directory and regenerates      #
+# the output/feeds.opml file.                                         #
+#######################################################################
 
 image: alpine:latest
 
 variables:
-  FEEDS_FILE: "feeds.yml"
-  OUTPUT_DIR: "output"
+  FEEDS_FILE: ".raw/feeds.yml"
   OUTPUT_FILE: "feeds.opml"
   REQUEST_TIMEOUT: "10"
   REQUEST_RETRIES: "3"
@@ -20,14 +19,14 @@ variables:
 stages:
   - update
 
-## Auto-update feeds OPML and create PR (automatic on main when feeds.yml changed)
+## Auto-update feeds OPML and create PR (automatic on main when .raw/feeds.yml changed)
 update_feeds_opml_auto:
   stage: update
   image: python:3.14-alpine
   rules:
     - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
       changes:
-        - feeds.yml
+        - .raw/feeds.yml
     - when: never
   before_script:
     - apk add --no-cache git curl bash jq coreutils
@@ -35,7 +34,7 @@ update_feeds_opml_auto:
     - chmod +x scripts/gitlab/update-feeds.sh
     - GITLAB_TOKEN="$GITLAB_TOKEN" GITLAB_HOST="$GITLAB_HOST" ./scripts/gitlab/update-feeds.sh
 
-## Auto-update feeds OPML and create PR (manual trigger)
+## Manual update feeds OPML and create PR
 update_feeds_opml_manual:
   stage: update
   image: python:3.14-alpine

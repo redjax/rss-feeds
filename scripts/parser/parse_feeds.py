@@ -13,7 +13,7 @@ Input:
         version: 1
 
         feeds:
-          - url: https://example.com/feed.xml
+          - url: [https://example.com/feed.xml](https://example.com/feed.xml)
             folder_path: [Tech]
             enabled: true
             overrides:
@@ -44,15 +44,15 @@ def parse_args():
     parser.add_argument(
         "--input",
         type=str,
-        default="feeds.yml",
+        default=".raw/feeds.yml",
         help="Path to the input feeds.yml file (default: feeds.yml)",
     )
 
     parser.add_argument(
         "--output-dir",
         type=str,
-        default="output",
-        help="Directory to write the output OPML file (default: output)",
+        default=".",
+        help="Directory to write the output OPML file (default: .)",
     )
 
     parser.add_argument(
@@ -104,8 +104,8 @@ class OPMLGenerator:
 
     def __init__(
         self,
-        input_path: str = "feeds.yml",
-        output_dir: str = "output",
+        input_path: str = ".raw/feeds.yml",
+        output_dir: str = ".",
         output_filename: str = "feeds.opml",
         timeout: int = 10,
         max_retries: int = 3,
@@ -114,8 +114,8 @@ class OPMLGenerator:
         """Initialize the OPMLGenerator with configuration.
 
         Params:
-            input_path (str): Path to the input feeds.yml file (default: "feeds.yml").
-            output_dir (str): Directory to write OPML output files (default: "output").
+            input_path (str): Path to the input feeds.yml file (default: ".raw/feeds.yml").
+            output_dir (str): Directory to write OPML output files (default: ".").
             output_filename (str): Name of the output OPML file (default: "feeds.opml").
             timeout (int): Request timeout in seconds (default: 10).
             max_retries (int): Maximum retry attempts for failed requests (default: 3).
