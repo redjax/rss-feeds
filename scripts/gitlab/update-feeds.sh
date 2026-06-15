@@ -2,7 +2,7 @@
 set -euo pipefail
 
 THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-REPO_ROOT=$(realpath -m "${THIS_DIR}/../../../")
+REPO_ROOT="$(cd "${THIS_DIR}/../.." && pwd -P)"
 cd "${REPO_ROOT}"
 
 FEEDS_FILE="${FEEDS_FILE:-feeds.yml}"
