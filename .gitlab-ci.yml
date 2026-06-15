@@ -20,88 +20,36 @@ variables:
 stages:
   - update
 
-## Auto-update feeds OPML and create PR
-update_feeds_opml:
+## Auto-update feeds OPML and create PR (automatic on main when feeds.yml changed)
+update_feeds_opml_auto:
   stage: update
   image: python:3.14-alpine
-  script:
-    - apk add --no-cache git curl bash jq
-    - |
-      cd $CI_PROJECT_DIR
-
-      ## Ensure uv is installed
-      ./scripts/install/install-uv.sh
-
-      ## Only run on main branch
-      if [[ "$CI_COMMIT_BRANCH" != "$CI_DEFAULT_BRANCH" ]]; then
-        echo "Not on main branch, skipping OPML update"
-        exit 0
-      fi
-
-      ## Check if feeds.yml changed between previous main commit and this one
-      PREV_COMMIT=$(git rev-parse HEAD@{1})
-      if ! git diff --name-only "$PREV_COMMIT" "$CI_COMMIT_SHA" | grep -q "^${FEEDS_FILE}$"; then
-        echo "feeds.yml not changed, skipping OPML update"
-        exit 0
-      fi
-
-      echo "feeds.yml changed - updating OPML and creating PR"
-
-      ## Run parser via your wrapper script
-      ./scripts/run-parser.sh \
-        --input "${FEEDS_FILE}" \
-        --output-dir "${OUTPUT_DIR}" \
-        --output-file "${OUTPUT_FILE}" \
-        --timeout "${REQUEST_TIMEOUT}" \
-        --retries "${REQUEST_RETRIES}" \
-        --title "${OPML_TITLE}"
-
-      ## Create branch
-      UPDATE_BRANCH="chore/update-feeds-${CI_COMMIT_SHORT_SHA}"
-      git config --global user.email "ci-bot@example.com"
-      git config --global user.name "CI Bot"
-      git checkout -b "$UPDATE_BRANCH"
-
-      ## Commit OPML
-      git add "${OUTPUT_DIR}/${OUTPUT_FILE}"
-      git commit -m "chore: update feeds.opml (auto-generated)"
-
-      ## Push branch
-      git push -u origin "$UPDATE_BRANCH"
-
-      ## Create PR
-      PR_TITLE="chore: update feeds.opml (auto-generated)"
-      PR_DESC="This PR auto-updates feeds.opml because feeds.yml changed on main."
-
-      curl -X POST \
-        -H "Authorization: Bearer ${GITLAB_TOKEN}" \
-        -H "Content-Type: application/json" \
-        "https://${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests" \
-        -d "{
-          \"source_branch\": \"${UPDATE_BRANCH}\",
-          \"target_branch\": \"${CI_DEFAULT_BRANCH}\",
-          \"title\": \"${PR_TITLE}\",
-          \"description\": \"${PR_DESC}\",
-          \"remove_source_branch\": true
-        }"
-
-      ## Auto-merge PR
-      MR_IID=$(curl -s \
-        -H "Authorization: Bearer ${GITLAB_TOKEN}" \
-        "https://${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests?source_branch=${UPDATE_BRANCH}" \
-        | jq -r '.[0].iid')
-
-      if [[ -n "$MR_IID" && "$MR_IID" != "null" ]]; then
-        curl -X PUT \
-          -H "Authorization: Bearer ${GITLAB_TOKEN}" \
-          -H "Content-Type: application/json" \
-          "https://${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}/merge" \
-          -d "{\"should_remove_source_branch\": true}"
-      else
-        echo "[WARNING] Could not find MR for branch ${UPDATE_BRANCH}"
-      fi
   rules:
     - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+      changes:
+        - feeds.yml
+    - when: never
+  before_script:
+    - apk add --no-cache git curl bash jq
+  script:
+    - chmod +x scripts/gitlab/update-feeds.sh
+    - ./scripts/gitlab/update-feeds.sh
+  variables:
+    GITLAB_TOKEN: "${GITLAB_TOKEN}"
+    GITLAB_HOST: "${GITLAB_HOST}"
+
+## Auto-update feeds OPML and create PR (manual trigger)
+update_feeds_opml_manual:
+  stage: update
+  image: python:3.14-alpine
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
+  before_script:
+    - apk add --no-cache git curl bash jq
+  script:
+    - chmod +x scripts/gitlab/update-feeds.sh
+    - ./scripts/gitlab/update-feeds.sh
   variables:
     GITLAB_TOKEN: "${GITLAB_TOKEN}"
     GITLAB_HOST: "${GITLAB_HOST}"
