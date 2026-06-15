@@ -58,3 +58,21 @@ feeds:
   - url: https://feeds.feedburner.com/Explosm
     folder_path: ["Happy Feed"]
     enabled: true
+  - url: https://edb.tools/index.xml
+    folder_path: ["Personal Blogs"]
+    enabled: true
+  - url: https://kate.io/feed.xml
+    folder_path: ["Personal Blogs"]
+    enabled: true
+  - url: https://alexandra-zaharia.github.io/feed.xml
+    folder_path: ["Personal Blogs"]
+    enabled: true
+  - url: https://www.windytan.com/feeds/posts/default
+    folder_path: ["Personal Blogs"]
+    enabled: true
+  - url: https://ellie.wtf/index.xml
+    folder_path: ["Personal Blogs"]
+    enabled: true
+  - url: https://www.kenmuse.com/rss/index.xml
+    folder_path: ["Personal Blogs"]
+    enabled: true
