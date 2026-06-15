@@ -2,13 +2,16 @@
 set -euo pipefail
 
 THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-REPO_ROOT="$(cd "${THIS_DIR}/../.." && pwd -P)"
+REPO_ROOT="$(cd "${THIS_DIR}/../../" && pwd -P)"
 cd "${REPO_ROOT}"
 
 ## Ensure .local/bin is in PATH
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
+
+## Ensure git uses the project access token
+git remote set-url origin "https://gitlab-ci-token:${GITLAB_TOKEN}@${GITLAB_HOST}/${CI_PROJECT_PATH}.git"
 
 OUTPUT_DIR="${OUTPUT_DIR:-output}"
 OUTPUT_FILE="${OUTPUT_FILE:-feeds.opml}"
