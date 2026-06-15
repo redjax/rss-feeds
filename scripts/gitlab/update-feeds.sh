@@ -21,10 +21,10 @@ if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
 fi
 
 ## Ensure uv is installed
-./scripts/install/install-uv.sh
-
-## Ensure .local/bin is in PATH
-export PATH="$HOME/.local/bin:$PATH"
+if ! ./scripts/install/install-uv.sh; then
+  echo "[ERROR] uv installation failed" >&2
+  exit 1
+fi
 
 ## Run parser via your wrapper script
 ./scripts/run-parser.sh \
