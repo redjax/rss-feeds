@@ -26,12 +26,17 @@ Output:
 
 import re
 import time
-import niquests as requests
+import niquests
+from niquests.exceptions import HTTPError, RequestException
 import feedparser
 from lxml import etree as ET
 from pathlib import Path
 import yaml
 import argparse
+
+USER_AGENT: dict = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+}
 
 
 def parse_args():
@@ -128,34 +133,87 @@ class OPMLGenerator:
         self.max_retries = max_retries
         self.opml_title = opml_title
 
-    def fetch_feed(self, url: str) -> feedparser.FeedParserDict:
+    def fetch_feed(self, url: str) -> feedparser.FeedParserDict | None:
         """Retrieve and parse an RSS/Atom feed from a URL.
 
         Fetches the feed using niquests with retry logic and exponential backoff,
         then parses the response with feedparser into a structured dict.
 
-        Args:
+        Params:
             url (str): The feed URL to fetch (RSS, Atom, or JSON Feed).
-
-        Returns:
-            feedparser.FeedParserDict: Parsed feed data containing feed metadata
-            and entries.
-
-        Raises:
-            Exception: Raises the last exception after all retries are exhausted.
         """
-        for attempt in range(self.max_retries):
+
+        for attempt in range(1, self.max_retries + 1):
             try:
-                resp = requests.get(url, timeout=self.timeout)
+                resp = niquests.get(
+                    url,
+                    timeout=self.timeout,
+                    headers=USER_AGENT,
+                    allow_redirects=True,
+                )
+
+                status = resp.status_code
+
+                # Permanent failures
+                if status in (401, 403, 404, 410):
+                    print(
+                        f"[WARN] {url} returned HTTP {status}; "
+                        "using fallback metadata"
+                    )
+                    return None
+
                 resp.raise_for_status()
 
-                return feedparser.parse(resp.content)
+                parsed = feedparser.parse(resp.content)
 
-            except Exception:
-                if attempt < self.max_retries - 1:
-                    time.sleep(1.5 * (attempt + 1))
-                else:
-                    raise
+                if getattr(parsed, "bozo", False):
+                    print(
+                        f"[WARN] Feed parse issue for {url}: "
+                        f"{getattr(parsed, 'bozo_exception', '')}"
+                    )
+
+                return parsed
+
+            except HTTPError as exc:
+                status = getattr(exc.response, "status_code", None)
+
+                ## Retry only transient server failures
+                if status and status >= 500:
+                    wait = 2**attempt
+
+                    print(
+                        f"[WARN] HTTP {status} for {url}; "
+                        f"retrying in {wait}s "
+                        f"({attempt}/{self.max_retries})"
+                    )
+
+                    time.sleep(wait)
+                    continue
+
+                print(f"[WARN] Failed to fetch {url}: {exc}")
+                return None
+
+            except RequestException as exc:
+                wait = 2**attempt
+
+                if attempt < self.max_retries:
+                    print(
+                        f"[WARN] Request failed for {url}: {exc}; "
+                        f"retrying in {wait}s "
+                        f"({attempt}/{self.max_retries})"
+                    )
+
+                    time.sleep(wait)
+                    continue
+
+                print(f"[WARN] Giving up on {url}: {exc}")
+                return None
+
+            except Exception as exc:
+                print(f"[WARN] Unexpected error for {url}: {exc}")
+                return None
+
+        return None
 
     def slugify(self, url: str) -> str:
         """Generate a URL-safe slug from a feed URL.
