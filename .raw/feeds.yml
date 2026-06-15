@@ -34,3 +34,27 @@ feeds:
   - url: https://www.bleepingcomputer.com/feed/
     folder_path: ["Cybersecurity"]
     enabled: true
+  - url: https://cvefeed.io/rssfeed/latest.atom
+    folder_path: ["Cybersecurity"]
+    enabled: true
+  - url: https://www.theverge.com/rss/index.xml
+    folder_path: ["Tech"]
+    enabled: true
+  - url: https://api.theregister.com/api/v1/article?orderBy=published&site_id=2&remapper=rss
+    folder_path: ["Tech"]
+    enabled: true
+  - url: https://feeds.arstechnica.com/arstechnica/index
+    folder_path: ["Tech"]
+    enabled: true
+  - url: https://terminaltrove.com/totw.xml
+    folder_path: ["Selfhosting"]
+    enabled: true
+  - url: https://www.microsoft.com/en-us/security/blog/feed/
+    folder_path: ["Cybersecurity"]
+    enabled: true
+  - url: https://lazyadmin.nl/feed/
+    folder_path: ["Tech"]
+    enabled: true
+  - url: https://feeds.feedburner.com/Explosm
+    folder_path: ["Happy Feed"]
+    enabled: true
