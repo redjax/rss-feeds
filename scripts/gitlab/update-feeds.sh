@@ -22,7 +22,7 @@ fi
 
 ## Run parser via your wrapper script
 ./scripts/run-parser.sh \
-  --input "${FEEDS_FILE}" \
+  --input-file "${FEEDS_FILE}" \
   --output-dir "${OUTPUT_DIR}" \
   --output-file "${OUTPUT_FILE}" \
   --timeout "${REQUEST_TIMEOUT}" \
