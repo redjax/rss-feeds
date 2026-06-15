@@ -17,6 +17,9 @@ variables:
   REQUEST_RETRIES: "3"
   OPML_TITLE: "My RSS Feeds"
 
+  GITLAB_TOKEN: "${GITLAB_TOKEN}"
+  GITLAB_HOST: "${GITLAB_HOST}"
+
 stages:
   - update
 
@@ -34,9 +37,6 @@ update_feeds_opml_auto:
   script:
     - chmod +x scripts/gitlab/update-feeds.sh
     - ./scripts/gitlab/update-feeds.sh
-  variables:
-    GITLAB_TOKEN: "${GITLAB_TOKEN}"
-    GITLAB_HOST: "${GITLAB_HOST}"
 
 ## Auto-update feeds OPML and create PR (manual trigger)
 update_feeds_opml_manual:
@@ -50,6 +50,3 @@ update_feeds_opml_manual:
   script:
     - chmod +x scripts/gitlab/update-feeds.sh
     - ./scripts/gitlab/update-feeds.sh
-  variables:
-    GITLAB_TOKEN: "${GITLAB_TOKEN}"
-    GITLAB_HOST: "${GITLAB_HOST}"
