@@ -5,6 +5,11 @@ THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd "${THIS_DIR}/../.." && pwd -P)"
 cd "${REPO_ROOT}"
 
+## Ensure .local/bin is in PATH
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
 FEEDS_FILE="${FEEDS_FILE:-feeds.yml}"
 OUTPUT_DIR="${OUTPUT_DIR:-output}"
 OUTPUT_FILE="${OUTPUT_FILE:-feeds.opml}"
