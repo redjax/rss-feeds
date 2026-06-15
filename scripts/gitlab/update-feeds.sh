@@ -39,5 +39,12 @@ if [[ ! -f "${OUTPUT_FILE}" ]]; then
   exit 1
 fi
 
+## Ensure commit script is executable
 chmod +x scripts/gitlab/commit-changes.sh
+
 GITLAB_TOKEN="$GITLAB_TOKEN" GITLAB_HOST="$GITLAB_HOST" ./scripts/gitlab/commit-changes.sh
+
+## Persist version file for release stage
+if [[ ! -f ".version" ]]; then
+  echo "0.1.0" >.version
+fi
