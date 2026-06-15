@@ -255,6 +255,23 @@ class OPMLGenerator:
 
         return link
 
+    def normalize_folder_path(self, fp: list) -> tuple[str, ...]:
+        """Normalize folder path, ensure strings, strip whitespace, remove empties."""
+        if not fp:
+            return ("Uncategorized",)
+
+        cleaned = []
+        for part in fp:
+            if part is None:
+                continue
+
+            part = str(part).strip()
+
+            if part:
+                cleaned.append(part)
+
+        return tuple(cleaned or ["Uncategorized"])
+
     def generate_opml_generic(self, feeds: list[dict]) -> str:
         """Generate a generic OPML 2.0 document from a list of feeds.
 
@@ -295,51 +312,81 @@ class OPMLGenerator:
 
         body = ET.SubElement(root, "body")
 
-        folders: dict[str, list[dict]] = {}
+        ## Deduplicate on URL and folder paths
+        seen: set[tuple[str, frozenset[str]]] = set()
+        cleaned_feeds: list[dict] = []
 
-        # Group feeds by their first folder_path entry
         for f in feeds:
-            fp = f.get("folder_path", []) or []
+            if not isinstance(f, dict):
+                continue
 
-            folder = fp[0] if fp else "Uncategorized"
-            folders.setdefault(folder, []).append(f)
+            url = f.get("url")
+            if not url:
+                continue
 
-        ## Build OPML outline tree with folders as parent outlines
-        for folder_name, folder_feeds in sorted(folders.items()):
-            folder_outline = ET.SubElement(body, "outline")
-            folder_outline.attrib["text"] = folder_name
-            folder_outline.attrib["title"] = folder_name
+            fp = self.normalize_folder_path(f.get("folder_path"))
 
-            for f in folder_feeds:
+            key = (url, frozenset(fp))
+            if key in seen:
+                continue
+
+            seen.add(key)
+
+            ## Store normalized folder path
+            f = dict(f)
+            f["_folder_path"] = fp
+            cleaned_feeds.append(f)
+
+        ## Build folder tree structure
+        tree: dict = {}
+
+        def insert(path: tuple[str, ...], feed: dict):
+            node = tree
+            for part in path:
+                node = node.setdefault(part, {})
+            node.setdefault("_feeds", []).append(feed)
+
+        for f in cleaned_feeds:
+            insert(f["_folder_path"], f)
+
+        ## Recursive OPML builder
+        def build_outline(parent_xml, subtree: dict, path: tuple[str, ...]):
+            ## Folders first
+            for key in sorted(k for k in subtree.keys() if k != "_feeds"):
+                folder_xml = ET.SubElement(parent_xml, "outline")
+                folder_xml.attrib["text"] = key
+                folder_xml.attrib["title"] = key
+
+                build_outline(folder_xml, subtree[key], path + (key,))
+
+            ## Feeds in this node
+            for f in subtree.get("_feeds", []):
                 url = f["url"]
 
-                ## Fetch feed metadata
                 feed_obj = self.fetch_feed(url)
-                feed_data = feed_obj.get("feed", {})
+                feed_data = (feed_obj or {}).get("feed", {})
 
-                ## Resolve feed name (override > fetched title > slugified URL)
                 name = (
                     f.get("overrides", {}).get("name")
                     or feed_data.get("title")
                     or self.slugify(url)
                 )
 
-                ## Resolve site URL (override > fetched link > canonical homepage)
                 site_url = (
                     f.get("overrides", {}).get("site_url")
                     or feed_data.get("link")
                     or self.canonical_homepage(url)
                 )
 
-                ## Create feed outline element with required OPML attributes
-                o = ET.SubElement(folder_outline, "outline")
+                o = ET.SubElement(parent_xml, "outline")
                 o.attrib["text"] = name
                 o.attrib["title"] = name
                 o.attrib["type"] = "rss"
                 o.attrib["xmlUrl"] = url
                 o.attrib["htmlUrl"] = site_url
 
-        ## Return pretty-printed OPML XML string
+        build_outline(body, tree, ())
+
         return ET.tostring(root, pretty_print=True, encoding="unicode")
 
     def load_feeds(self) -> list[dict]:
