@@ -6,8 +6,6 @@ set -euo pipefail
 : "${GITLAB_HOST:?GITLAB_HOST is missing}"
 : "${CI_PROJECT_PATH:?CI_PROJECT_PATH is missing}"
 : "${CI_PROJECT_ID:?CI_PROJECT_ID is missing}"
-: "${CI_COMMIT_SHORT_SHA:?CI_COMMIT_SHORT_SHA is missing}"
-: "${CI_DEFAULT_BRANCH:=main}"
 
 THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd "${THIS_DIR}/../../" && pwd -P)"
