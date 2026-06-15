@@ -27,7 +27,7 @@ fi
   --output-file "${OUTPUT_FILE}" \
   --timeout "${REQUEST_TIMEOUT}" \
   --retries "${REQUEST_RETRIES}" \
-  --title "${OPML_TITLE}"
+  --opml-title "${OPML_TITLE}"
 
 ## Check if feeds.opml was created
 if [[ ! -f "${OUTPUT_DIR}/${OUTPUT_FILE}" ]]; then
