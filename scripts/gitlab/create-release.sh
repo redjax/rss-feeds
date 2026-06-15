@@ -8,7 +8,6 @@ set -euo pipefail
 
 VERSION_FILE="${VERSION_FILE:-.version}"
 OUTPUT_FILE="${OUTPUT_FILE:-feeds.opml}"
-BASE_BRANCH="${BASE_BRANCH:-main}"
 
 THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd "${THIS_DIR}/../../" && pwd -P)"
@@ -16,56 +15,69 @@ cd "${REPO_ROOT}"
 
 git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${GITLAB_HOST}/${CI_PROJECT_PATH}.git"
 
-git fetch origin --tags
-
-## Skip if no OPML change since last release
-if ! ./scripts/version/opml-changed.sh; then
-  echo "No OPML changes since last release → skipping release"
-  exit 0
+## Verify artifacts exist
+if [[ ! -f "$VERSION_FILE" ]]; then
+  echo "[ERROR] Missing version file: $VERSION_FILE" >&2
+  exit 1
 fi
 
-## Detect bump type (major, minor, patch) from git changes
-BUMP_TYPE=$(./scripts/version/detect-bump.sh || echo "patch")
-echo "Detected bump type: $BUMP_TYPE"
+if [[ ! -f "$OUTPUT_FILE" ]]; then
+  echo "[ERROR] Missing OPML file: $OUTPUT_FILE" >&2
+  exit 1
+fi
 
-## Bump version
-NEW_VERSION=$(
-  ./scripts/version/bump_version.sh \
-    -t "$BUMP_TYPE" \
-    -f "$VERSION_FILE"
-)
+VERSION=$(cat "$VERSION_FILE")
 
-echo "New version: $NEW_VERSION"
+TAG="release/v${VERSION}"
+ASSET_NAME="feeds-v${VERSION}.opml"
 
-TAG="release/v${NEW_VERSION}"
-ASSET_NAME="feeds-v${NEW_VERSION}.opml"
+echo "Release version: $VERSION"
+echo "Tag: $TAG"
+
+## Fetch tags from remote
+git fetch --prune --tags origin
 
 ## Avoid duplicate tags
 if git ls-remote --tags origin | grep -q "refs/tags/${TAG}$"; then
-  echo "Tag already exists: $TAG"
+  echo "Tag already exists: $TAG, skipping"
   exit 0
 fi
 
-## Create git tag & push
+## Create tag
 git config user.email "ci-bot@example.com"
 git config user.name "CI Bot"
 
 git tag "$TAG"
 git push origin "$TAG"
 
-## Create GitLab release
-curl -s -X POST \
+## Upload feeds.opml as release asset
+PACKAGE_NAME="feeds-opml"
+PACKAGE_FILE="feeds-v${VERSION}.opml"
+
+echo "Uploading OPML as package asset..."
+
+ASSET_FULL_URL="https://${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${VERSION}/${PACKAGE_FILE}"
+
+curl -sS --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+  --upload-file "${OUTPUT_FILE}" \
+  "${ASSET_FULL_URL}"
+
+echo "Uploaded asset: ${ASSET_FULL_URL}"
+
+## Create release
+curl -sS -X POST \
   -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+  -H "Content-Type: application/json" \
   "https://${GITLAB_HOST}/api/v4/projects/${CI_PROJECT_ID}/releases" \
-  -d "{
-    \"name\": \"Release v${NEW_VERSION}\",
+  --data-raw "{
+    \"name\": \"Release v${VERSION}\",
     \"tag_name\": \"${TAG}\",
-    \"description\": \"OPML release v${NEW_VERSION}\",
+    \"description\": \"OPML release v${VERSION}\",
     \"assets\": {
       \"links\": [
         {
           \"name\": \"${ASSET_NAME}\",
-          \"url\": \"https://${GITLAB_HOST}/${CI_PROJECT_PATH}/-/raw/${TAG}/${OUTPUT_FILE}\"
+          \"url\": \"${ASSET_FULL_URL}\"
         }
       ]
     }
