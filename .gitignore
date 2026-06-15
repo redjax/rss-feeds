@@ -12,6 +12,14 @@ env/
 log/
 logs/
 
+## Python
+virtualenv/
+.venv/
+*.py[codz]
+*$py.class
+*.egg
+*.egg-info
+
 ## Allow rules
 !*example*.*
 !*.*example*
