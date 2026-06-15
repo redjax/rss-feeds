@@ -15,8 +15,16 @@ REQUEST_TIMEOUT="${REQUEST_TIMEOUT:-10}"
 REQUEST_RETRIES="${REQUEST_RETRIES:-3}"
 OPML_TITLE="${OPML_TITLE:-My RSS Feeds}"
 
+## Ensure .local/bin is in PATH
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
 ## Ensure uv is installed
 ./scripts/install/install-uv.sh
+
+## Ensure .local/bin is in PATH
+export PATH="$HOME/.local/bin:$PATH"
 
 ## Run parser via your wrapper script
 ./scripts/run-parser.sh \

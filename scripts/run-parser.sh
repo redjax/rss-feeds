@@ -20,6 +20,11 @@ OPML_TITLE="My RSS Feeds"
 DEBUG=false
 DRY_RUN=false
 
+## Ensure .local/bin is in PATH
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
 function debug() {
   if [[ "${DEBUG}" == "true" ]]; then
     echo "[DEBUG] $*"
@@ -87,15 +92,16 @@ fi
 
 "${INSTALL_UV_SCRIPT}"
 
-cd "${PARSER_DIR}"
+## Ensure uv is available in PATH immediately
+export PATH="$HOME/.local/bin:$PATH"
+
+cd "${REPO_ROOT}"
 
 ## Validate inputs
 if [[ ! -f "${REPO_ROOT}/${FEEDS_FILE}" ]]; then
   echo "[ERROR] Missing input file: ${FEEDS_FILE}" >&2
   exit 1
 fi
-
-mkdir -p "${REPO_ROOT}/$(dirname "${OUTPUT_FILE}")" 2>/dev/null || true
 
 parse_cmd=(uv run "${PARSE_SCRIPT}")
 parse_cmd+=(--input "${REPO_ROOT}/${FEEDS_FILE}")
@@ -111,5 +117,7 @@ if [[ "${DRY_RUN}" == "true" ]]; then
   echo "[DRY RUN] ${parse_cmd[*]}"
   exit 0
 fi
+
+debug "Running: ${parse_cmd[*]}"
 
 "${parse_cmd[@]}"
