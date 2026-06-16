@@ -1,7 +1,7 @@
 <opml version="2.0">
   <head>
     <title>My RSS Feeds</title>
-    <dateCreated>2026-06-15 18:44:11</dateCreated>
+    <dateCreated>2026-06-16 03:30:09</dateCreated>
   </head>
   <body>
     <outline text="Cybersecurity" title="Cybersecurity">
@@ -23,7 +23,8 @@
       <outline text="Windows Developer Blog" title="Windows Developer Blog" type="rss" xmlUrl="https://blogs.windows.com/windowsdeveloper/feed/" htmlUrl="https://blogs.windows.com/windowsdeveloper/"/>
     </outline>
     <outline text="News / Doom &amp; Gloom" title="News / Doom &amp; Gloom">
-      <outline text="BBC News" title="BBC News" type="rss" xmlUrl="https://feeds.bbci.co.uk/news/rss.xml" htmlUrl="https://www.bbc.co.uk/news"/>
+      <outline text="BBC - Front Page" title="BBC - Front Page" type="rss" xmlUrl="https://feeds.bbci.co.uk/news/rss.xml" htmlUrl="https://www.bbc.co.uk/news"/>
+      <outline text="BBC - World" title="BBC - World" type="rss" xmlUrl="https://feeds.bbci.co.uk/news/world/rss.xml" htmlUrl="https://www.bbc.co.uk/news/world"/>
       <outline text="bellingcat" title="bellingcat" type="rss" xmlUrl="https://www.bellingcat.com/feed/" htmlUrl="https://www.bellingcat.com/"/>
       <outline text="Gov Brief Today" title="Gov Brief Today" type="rss" xmlUrl="https://govbrief.today/feed/" htmlUrl="https://govbrief.today/"/>
       <outline text="Bolts" title="Bolts" type="rss" xmlUrl="https://boltsmag.org/feed/" htmlUrl="https://boltsmag.org/"/>
