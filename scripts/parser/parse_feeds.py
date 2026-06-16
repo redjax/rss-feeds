@@ -33,6 +33,7 @@ from lxml import etree as ET
 from pathlib import Path
 import yaml
 import argparse
+import typing as t
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
@@ -154,8 +155,40 @@ class OPMLGenerator:
         except Exception:
             return {}
 
+    def _json_safe(self, obj: t.Any) -> t.Any:
+        """Recursively convert an object into a JSON-serializable form.
+
+        Params:
+            obj (Any): The object to sanitize for JSON serialization. This may be
+                a dict, list, primitive value, or a non-serializable object such as
+                a feedparser exception.
+
+        Returns:
+            Any: A JSON-safe version of the object, with unsupported values
+            converted to strings or removed as needed.
+        """
+
+        if isinstance(obj, dict):
+            out = {}
+
+            for k, v in obj.items():
+                if k == "bozo_exception":
+                    continue
+                out[k] = self._json_safe(v)
+
+            return out
+
+        if isinstance(obj, list):
+            return [self._json_safe(v) for v in obj]
+
+        if isinstance(obj, (str, int, float, bool)) or obj is None:
+            return obj
+
+        return str(obj)
+
     def save_cache(self, cache: dict):
-        self.cache_file.write_text(json.dumps(cache, indent=2))
+        safe_cache = self._json_safe(cache)
+        self.cache_file.write_text(json.dumps(safe_cache, indent=2))
 
     def fetch_feed(self, url: str) -> feedparser.FeedParserDict | None:
         """Retrieve and parse an RSS/Atom feed from a URL.
