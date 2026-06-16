@@ -13,6 +13,13 @@ feeds:
   - url: https://feeds.bbci.co.uk/news/rss.xml
     folder_path: ["News / Doom & Gloom"]
     enabled: true
+    overrides:
+      name: "BBC - Front Page"
+  - url: https://feeds.bbci.co.uk/news/world/rss.xml
+    folder_path: ["News / Doom & Gloom"]
+    enabled: true
+    overrides:
+      name: "BBC - World"
   - url: https://news.ycombinator.com/rss
     folder_path: ["Tech"]
     enabled: true
