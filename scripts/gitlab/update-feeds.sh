@@ -39,12 +39,23 @@ if [[ ! -f "${OUTPUT_FILE}" ]]; then
   exit 1
 fi
 
+## Fetch history and tags
+git fetch --tags origin 2>/dev/null || true
+
+## Bump version only if OPML changed
+if ./scripts/version/opml-changed.sh; then
+  if [[ ! -f ".version" ]]; then
+    echo "0.1.0" >.version
+  fi
+
+  ## Detect bump type from git history and bump version file
+  BUMP_TYPE="$(./scripts/version/detect-bump.sh)"
+  ./scripts/version/bump-version.sh -t "${BUMP_TYPE}" -f .version
+else
+  echo "OPML has not changed since last release; skipping version bump."
+fi
+
 ## Ensure commit script is executable
 chmod +x scripts/gitlab/commit-changes.sh
 
 GITLAB_TOKEN="$GITLAB_TOKEN" GITLAB_HOST="$GITLAB_HOST" ./scripts/gitlab/commit-changes.sh
-
-## Persist version file for release stage
-if [[ ! -f ".version" ]]; then
-  echo "0.1.0" >.version
-fi

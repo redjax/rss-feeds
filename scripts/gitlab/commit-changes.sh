@@ -58,11 +58,13 @@ fi
 
 ## Copy generated OPML into update branch worktree
 cp "${OUTPUT_FILE}" "${WORKTREE_DIR}/${OUTPUT_FILE}"
+## Copy version file into worktree
+cp ".version" "${WORKTREE_DIR}/.version"
 
 cd "${WORKTREE_DIR}"
 
-## Commit OPML
-git add "${OUTPUT_FILE}"
+## Commit OPML & version file
+git add "${OUTPUT_FILE}" .version
 
 ## Avoid failing pipeline if nothing changed
 if git diff --cached --quiet; then
