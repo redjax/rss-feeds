@@ -93,7 +93,7 @@ feeds:
     folder_path: ["Tech"]
     enabled: true
   - url: https://www.trackawesomelist.com/awesome-selfhosted/awesome-selfhosted/rss.xml
-    folder_path: ["Selfhosting"]
+    folder_path: ["Selfhosting", "Updates Stream"]
     enabled: true
   - url: https://linuxize.com/index.xml
     folder_path: ["Tech"]
@@ -124,4 +124,46 @@ feeds:
     enabled: true
   - url: https://www.darknet.org.uk/feed/
     folder_path: ["Cybersecurity"]
+    enabled: true
+  - url: https://unicornriot.ninja/feed/
+    folder_path: ["News / Doom & Gloom"]
+    enabled: true
+  - url: https://vivaldi.com/feed/
+    folder_path: ["Updates Stream"]
+    enabled: true
+    overrides:
+      name: "Vivaldi Browser Updates"
+  - url: https://www.darkreading.com/rss.xml
+    folder_path: ["Cybersecurity"]
+    enabled: true
+  - url: https://govbrief.today/feed/
+    folder_path: ["News / Doom & Gloom", "Politics"]
+    enabled: true
+  - url: https://www.theregister.co.uk/security/headlines.atom
+    folder_path: ["Cybersecurity"]
+    enabled: true
+  - url: https://feeds.bbci.co.uk/news/technology/rss.xml
+    folder_path: ["Tech"]
+    enabled: true
+    overrides:
+      name: "BBC - Technology"
+  - url: https://thehackernews.com/feeds/posts/default
+    folder_path: ["Cybersecurity"]
+    enabled: true
+  - url: https://www.microsoft.com/security/blog/feed/
+    folder_path: ["Cybersecurity", "Microsoft"]
+    enabled: true
+    overrides:
+      name: "Microsoft Security"
+  - url: https://linuxize.com/index.xml
+    folder_path: ["Linux"]
+    enabled: true
+  - url: https://www.trackawesomelist.com/awesome-selfhosted/awesome-selfhosted/rss.xml
+    folder_path: ["Selfhosting", "Update Stream"]
+    enabled: true
+  - url: https://powershellisfun.com/feed/
+    folder_path: ["Programming/Powershell"]
+    enabled: true
+  - url: https://www.thesmokinggun.com/rss
+    folder_path: ["Politics"]
     enabled: true
