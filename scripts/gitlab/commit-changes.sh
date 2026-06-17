@@ -31,7 +31,7 @@ fi
 ## Create isolated worktree for update branch
 WORKTREE_DIR="$(mktemp -d)"
 
-cleanup() {
+function cleanup() {
   git worktree remove --force "${WORKTREE_DIR}" 2>/dev/null || true
   rm -rf "${WORKTREE_DIR}" 2>/dev/null || true
 }
@@ -78,7 +78,7 @@ git commit -m "chore: update feeds.opml (auto-generated)"
 git push -u origin "${UPDATE_BRANCH}" \
   -o merge_request.create \
   -o merge_request.title="chore: update feeds.opml (auto-generated)" \
-  -o merge_request.description="This PR auto-updates feeds.opml because .raw/feeds.yml changed." \
+  -o merge_request.description="This PR auto-updates feeds.opml because the feed YAML inputs changed." \
   -o merge_request.merge_when_pipeline_succeeds=true \
   -o merge_request.remove_source_branch=true
 
