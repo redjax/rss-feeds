@@ -1,15 +1,17 @@
-"""Generate OPML file from an input YML file.
+"""Generate OPML file from feed YAML inputs.
 
-This script reads a feeds.yml file, which is a list of RSS feed URLs. The script fetches
-each feed to extract metadata (title, link, description), and writes an OPML
-file to an output file. The OPML is in a generic format, and should be suitable for
-importing into Miniflux, FreshRSS, Tiny Tiny RSS, Inoreader, etc.
+This script reads one or more YAML files containing RSS feed definitions. It can
+accept a single feeds.yml file, a directory of feed YAML files, or a glob pattern.
+The script fetches each feed to extract metadata (title, link, description), and
+writes an OPML file to an output file. The OPML is in a generic format, and
+should be suitable for importing into Miniflux, FreshRSS, Tiny Tiny RSS,
+Inoreader, etc.
 
 Usage:
     python generate_opml.py
 
 Input:
-    feeds.yml: YAML file with minimal feed entries:
+    feeds.yml, a directory, or a glob pattern:
         version: 1
 
         feeds:
@@ -30,11 +32,11 @@ import niquests
 from niquests.exceptions import HTTPError, RequestException
 import feedparser
 from lxml import etree as ET
+from glob import glob
 from pathlib import Path
 import yaml
 import argparse
 import typing as t
-
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import hashlib
@@ -55,7 +57,7 @@ def parse_args():
         "--input",
         type=str,
         default=".raw/feeds.yml",
-        help="Path to the input feeds.yml file (default: feeds.yml)",
+        help="Path to the input feeds.yml file or directory (default: .raw/feeds.yml)",
     )
 
     parser.add_argument(
@@ -104,7 +106,7 @@ class OPMLGenerator:
     for timeouts, retries, input/output paths, and OPML metadata.
 
     Attributes:
-        input_path (Path): Path to the input feeds.yml file.
+        input_path (Path): Path to the input feeds.yml file or directory.
         output_dir (Path): Directory to write OPML output files.
         output_filename (str): Name of the output OPML file.
         timeout (int): Request timeout in seconds.
@@ -124,7 +126,7 @@ class OPMLGenerator:
         """Initialize the OPMLGenerator with configuration.
 
         Params:
-            input_path (str): Path to the input feeds.yml file (default: ".raw/feeds.yml").
+            input_path (str): Path to the input feeds.yml file or directory (default: ".raw/feeds.yml").
             output_dir (str): Directory to write OPML output files (default: ".").
             output_filename (str): Name of the output OPML file (default: "feeds.opml").
             timeout (int): Request timeout in seconds (default: 10).
@@ -279,7 +281,7 @@ class OPMLGenerator:
 
         cache[key] = {
             "ts": now,
-            "data": data,
+            "data": self._json_safe(data) if data is not None else None,
         }
 
         return data
@@ -455,11 +457,40 @@ class OPMLGenerator:
 
         return ET.tostring(root, pretty_print=True, encoding="unicode")
 
-    def load_feeds(self) -> list[dict]:
-        with open(self.input_path, "r", encoding="utf-8") as fh:
-            data = yaml.safe_load(fh)
+    def _feed_source_files(self) -> list[Path]:
+        raw = str(self.input_path)
 
-        return data.get("feeds", [])
+        if any(ch in raw for ch in "*?[]"):
+            files = [Path(p) for p in glob(raw)]
+
+            if not files:
+                raise FileNotFoundError(f"No files matched pattern: {raw}")
+
+        elif self.input_path.is_dir():
+            files = list(self.input_path.rglob("*.yml")) + list(
+                self.input_path.rglob("*.yaml")
+            )
+
+        elif self.input_path.is_file():
+            files = [self.input_path]
+
+        else:
+            raise FileNotFoundError(f"Input path does not exist: {self.input_path}")
+
+        files = sorted({p.resolve() for p in files if p.is_file()})
+
+        return [Path(p) for p in files]
+
+    def load_feeds(self) -> list[dict]:
+        feeds: list[dict] = []
+
+        for source in self._feed_source_files():
+            with source.open("r", encoding="utf-8") as fh:
+                data = yaml.safe_load(fh) or {}
+
+            feeds.extend(data.get("feeds", []))
+
+        return feeds
 
     def write_opml(self, opml_content: str) -> Path:
         """Write OPML content to the output file.
@@ -496,6 +527,14 @@ class OPMLGenerator:
             print(f"OPML written to {opml_path}")
         """
         feeds = self.load_feeds()
+        feeds = sorted(
+            feeds,
+            key=lambda f: (
+                tuple(f.get("folder_path") or []),
+                f.get("url", ""),
+                f.get("overrides", {}).get("name", ""),
+            ),
+        )
         opml = self.generate_opml_generic(feeds)
         path = self.write_opml(opml)
 
