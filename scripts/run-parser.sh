@@ -10,7 +10,7 @@ CWD="$(pwd)"
 
 trap 'cd "${CWD}"' EXIT
 
-FEEDS_FILE=".raw/feeds.yml"
+FEEDS_INPUT=".raw/"
 OUTPUT_FILE="feeds.opml"
 REQUEST_TIMEOUT=10
 REQUEST_RETRIES=3
@@ -36,7 +36,7 @@ Usage:
   $0 [OPTIONS]
 
 Options:
-  -i, --input-file   <path>   Input feeds.yml (default: .raw/feeds.yml)
+  -i, --input        <path>   Input feeds.yml file or directory (default: .raw/feeds.yml)
   -O, --output-file  <file>   Output OPML file (default: feeds.opml)
   -r, --retries      <int>    Retries
   -t, --timeout      <int>    Timeout
@@ -48,8 +48,8 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-  -i | --input-file)
-    FEEDS_FILE="$2"
+  -i | --input)
+    FEEDS_INPUT="$2"
     shift 2
     ;;
   -O | --output-file)
@@ -97,8 +97,8 @@ export PATH="$HOME/.local/bin:$PATH"
 cd "${REPO_ROOT}"
 
 ## Validate inputs
-if [[ ! -f "${REPO_ROOT}/${FEEDS_FILE}" ]]; then
-  echo "[ERROR] Missing input file: ${FEEDS_FILE}" >&2
+if [[ ! -e "${REPO_ROOT}/${FEEDS_INPUT}" ]]; then
+  echo "[ERROR] Missing input path: ${FEEDS_INPUT}" >&2
   exit 1
 fi
 
@@ -106,7 +106,7 @@ parse_cmd=(
   uv run
   --project "${PARSER_DIR}"
   python "${PARSER_DIR}/parse_feeds.py"
-  --input "${REPO_ROOT}/${FEEDS_FILE}"
+  --input "${REPO_ROOT}/${FEEDS_INPUT}"
   --output-file "${REPO_ROOT}/${OUTPUT_FILE}"
   --timeout "${REQUEST_TIMEOUT}"
   --retries "${REQUEST_RETRIES}"

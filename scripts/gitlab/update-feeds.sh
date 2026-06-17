@@ -9,7 +9,7 @@ THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd "${THIS_DIR}/../../" && pwd -P)"
 cd "${REPO_ROOT}"
 
-FEEDS_FILE="${FEEDS_FILE:-.raw/feeds.yml}"
+FEEDS_INPUT="${FEEDS_INPUT:-.raw/}"
 OUTPUT_FILE="${OUTPUT_FILE:-feeds.opml}"
 REQUEST_TIMEOUT="${REQUEST_TIMEOUT:-10}"
 REQUEST_RETRIES="${REQUEST_RETRIES:-3}"
@@ -28,7 +28,7 @@ fi
 
 ## Run parser via your wrapper script
 ./scripts/run-parser.sh \
-  --input-file "${FEEDS_FILE}" \
+  --input-file "${FEEDS_INPUT}" \
   --output-file "${OUTPUT_FILE}" \
   --timeout "${REQUEST_TIMEOUT}" \
   --retries "${REQUEST_RETRIES}" \
