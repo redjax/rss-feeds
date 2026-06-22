@@ -10,11 +10,6 @@ feeds:
   - url: https://xkcd.com/rss.xml
     folder_path: ["Happy Feed"]
     enabled: true
-  - url: https://feeds.bbci.co.uk/news/rss.xml
-    folder_path: ["News / Doom & Gloom"]
-    enabled: true
-    overrides:
-      name: "BBC - Front Page"
   - url: https://feeds.bbci.co.uk/news/world/rss.xml
     folder_path: ["News / Doom & Gloom"]
     enabled: true
