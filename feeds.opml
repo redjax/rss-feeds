@@ -1,29 +1,29 @@
 <opml version="2.0">
   <head>
     <title>My RSS Feeds</title>
-    <dateCreated>2026-06-16 06:18:41</dateCreated>
+    <dateCreated>2026-06-22 14:07:27</dateCreated>
   </head>
   <body>
     <outline text="Cybersecurity" title="Cybersecurity">
       <outline text="Microsoft" title="Microsoft">
         <outline text="Microsoft Security" title="Microsoft Security" type="rss" xmlUrl="https://www.microsoft.com/security/blog/feed/" htmlUrl="https://www.microsoft.com/en-us/security/blog/"/>
       </outline>
-      <outline text="Krebs on Security" title="Krebs on Security" type="rss" xmlUrl="https://krebsonsecurity.com/feed/" htmlUrl="https://krebsonsecurity.com"/>
-      <outline text="Malwarebytes" title="Malwarebytes" type="rss" xmlUrl="https://www.malwarebytes.com/blog/feed/index.xml" htmlUrl="https://www.malwarebytes.com/"/>
-      <outline text="BleepingComputer" title="BleepingComputer" type="rss" xmlUrl="https://www.bleepingcomputer.com/feed/" htmlUrl="https://www.bleepingcomputer.com/"/>
       <outline text="Latest Vulnerabilities" title="Latest Vulnerabilities" type="rss" xmlUrl="https://cvefeed.io/rssfeed/latest.atom" htmlUrl="https://cvefeed.io/vuln/latest/"/>
-      <outline text="Microsoft Security Blog" title="Microsoft Security Blog" type="rss" xmlUrl="https://www.microsoft.com/en-us/security/blog/feed/" htmlUrl="https://www.microsoft.com/en-us/security/blog/"/>
       <outline text="GRAHAM CLULEY" title="GRAHAM CLULEY" type="rss" xmlUrl="https://grahamcluley.com/feed/" htmlUrl="https://grahamcluley.com"/>
-      <outline text="www-hackmageddon-com" title="www-hackmageddon-com" type="rss" xmlUrl="https://www.hackmageddon.com/feed/" htmlUrl="https://www.hackmageddon.com/feed/"/>
+      <outline text="Krebs on Security" title="Krebs on Security" type="rss" xmlUrl="https://krebsonsecurity.com/feed/" htmlUrl="https://krebsonsecurity.com"/>
+      <outline text="The Hacker News" title="The Hacker News" type="rss" xmlUrl="https://thehackernews.com/feeds/posts/default" htmlUrl="https://thehackernews.com"/>
+      <outline text="www-bleepingcomputer-com" title="www-bleepingcomputer-com" type="rss" xmlUrl="https://www.bleepingcomputer.com/feed/" htmlUrl="https://www.bleepingcomputer.com/feed/"/>
       <outline text="Darknet – Hacking Tools, Hacker News &amp; Cyber Security" title="Darknet – Hacking Tools, Hacker News &amp; Cyber Security" type="rss" xmlUrl="https://www.darknet.org.uk/feed/" htmlUrl="https://www.darknet.org.uk"/>
       <outline text="darkreading" title="darkreading" type="rss" xmlUrl="https://www.darkreading.com/rss.xml" htmlUrl="https://www.darkreading.com"/>
+      <outline text="www-hackmageddon-com" title="www-hackmageddon-com" type="rss" xmlUrl="https://www.hackmageddon.com/feed/" htmlUrl="https://www.hackmageddon.com/feed/"/>
+      <outline text="Malwarebytes" title="Malwarebytes" type="rss" xmlUrl="https://www.malwarebytes.com/blog/feed/index.xml" htmlUrl="https://www.malwarebytes.com/"/>
+      <outline text="Microsoft Security Blog" title="Microsoft Security Blog" type="rss" xmlUrl="https://www.microsoft.com/en-us/security/blog/feed/" htmlUrl="https://www.microsoft.com/en-us/security/blog/"/>
       <outline text="www.theregister.com - Articles" title="www.theregister.com - Articles" type="rss" xmlUrl="https://www.theregister.co.uk/security/headlines.atom" htmlUrl="https://www.theregister.com"/>
-      <outline text="The Hacker News" title="The Hacker News" type="rss" xmlUrl="https://thehackernews.com/feeds/posts/default" htmlUrl="https://thehackernews.com"/>
     </outline>
     <outline text="Happy Feed" title="Happy Feed">
-      <outline text="xkcd.com" title="xkcd.com" type="rss" xmlUrl="https://xkcd.com/rss.xml" htmlUrl="https://xkcd.com/"/>
-      <outline text="Explosm.net" title="Explosm.net" type="rss" xmlUrl="https://feeds.feedburner.com/Explosm" htmlUrl="http://explosm.net"/>
       <outline text="Buttersafe" title="Buttersafe" type="rss" xmlUrl="https://feeds.feedburner.com/Buttersafe" htmlUrl="http://www.buttersafe.com"/>
+      <outline text="Explosm.net" title="Explosm.net" type="rss" xmlUrl="https://feeds.feedburner.com/Explosm" htmlUrl="http://explosm.net"/>
+      <outline text="xkcd.com" title="xkcd.com" type="rss" xmlUrl="https://xkcd.com/rss.xml" htmlUrl="https://xkcd.com/"/>
     </outline>
     <outline text="Linux" title="Linux">
       <outline text="Linux Tips, Tricks and Tutorials on Linuxize" title="Linux Tips, Tricks and Tutorials on Linuxize" type="rss" xmlUrl="https://linuxize.com/index.xml" htmlUrl="https://linuxize.com/"/>
@@ -35,31 +35,30 @@
       <outline text="Politics" title="Politics">
         <outline text="Gov Brief Today" title="Gov Brief Today" type="rss" xmlUrl="https://govbrief.today/feed/" htmlUrl="https://govbrief.today/"/>
       </outline>
-      <outline text="BBC - Front Page" title="BBC - Front Page" type="rss" xmlUrl="https://feeds.bbci.co.uk/news/rss.xml" htmlUrl="https://www.bbc.co.uk/news"/>
-      <outline text="BBC - World" title="BBC - World" type="rss" xmlUrl="https://feeds.bbci.co.uk/news/world/rss.xml" htmlUrl="https://www.bbc.co.uk/news/world"/>
-      <outline text="bellingcat" title="bellingcat" type="rss" xmlUrl="https://www.bellingcat.com/feed/" htmlUrl="https://www.bellingcat.com/"/>
-      <outline text="Gov Brief Today" title="Gov Brief Today" type="rss" xmlUrl="https://govbrief.today/feed/" htmlUrl="https://govbrief.today/"/>
       <outline text="Bolts" title="Bolts" type="rss" xmlUrl="https://boltsmag.org/feed/" htmlUrl="https://boltsmag.org/"/>
+      <outline text="BBC - World" title="BBC - World" type="rss" xmlUrl="https://feeds.bbci.co.uk/news/world/rss.xml" htmlUrl="https://www.bbc.co.uk/news/world"/>
+      <outline text="Gov Brief Today" title="Gov Brief Today" type="rss" xmlUrl="https://govbrief.today/feed/" htmlUrl="https://govbrief.today/"/>
       <outline text="UNICORN RIOT" title="UNICORN RIOT" type="rss" xmlUrl="https://unicornriot.ninja/feed/" htmlUrl="https://unicornriot.ninja/"/>
+      <outline text="bellingcat" title="bellingcat" type="rss" xmlUrl="https://www.bellingcat.com/feed/" htmlUrl="https://www.bellingcat.com/"/>
     </outline>
     <outline text="Personal Blogs" title="Personal Blogs">
-      <outline text="Home of nerd stuff" title="Home of nerd stuff" type="rss" xmlUrl="https://edb.tools/index.xml" htmlUrl="https://edb.tools/"/>
-      <outline text="Kate Murphy" title="Kate Murphy" type="rss" xmlUrl="https://kate.io/feed.xml" htmlUrl="https://kate.io/"/>
       <outline text="Alexandra Zaharia" title="Alexandra Zaharia" type="rss" xmlUrl="https://alexandra-zaharia.github.io/feed.xml" htmlUrl="https://alexandra-zaharia.github.io/"/>
-      <outline text="absorptions" title="absorptions" type="rss" xmlUrl="https://www.windytan.com/feeds/posts/default" htmlUrl="https://www.windytan.com/"/>
-      <outline text="Ellie's Notes" title="Ellie's Notes" type="rss" xmlUrl="https://ellie.wtf/index.xml" htmlUrl="https://ellie.wtf"/>
-      <outline text="Ken Muse" title="Ken Muse" type="rss" xmlUrl="https://www.kenmuse.com/rss/index.xml" htmlUrl="https://www.kenmuse.com/"/>
       <outline text="Inside the head of Daniel Roy Greenfeld" title="Inside the head of Daniel Roy Greenfeld" type="rss" xmlUrl="https://daniel.feldroy.com/feeds/atom.xml" htmlUrl="https://daniel.feldroy.com"/>
+      <outline text="Home of nerd stuff" title="Home of nerd stuff" type="rss" xmlUrl="https://edb.tools/index.xml" htmlUrl="https://edb.tools/"/>
+      <outline text="Ellie's Notes" title="Ellie's Notes" type="rss" xmlUrl="https://ellie.wtf/index.xml" htmlUrl="https://ellie.wtf"/>
+      <outline text="Kate Murphy" title="Kate Murphy" type="rss" xmlUrl="https://kate.io/feed.xml" htmlUrl="https://kate.io/"/>
+      <outline text="Ken Muse" title="Ken Muse" type="rss" xmlUrl="https://www.kenmuse.com/rss/index.xml" htmlUrl="https://www.kenmuse.com/"/>
+      <outline text="absorptions" title="absorptions" type="rss" xmlUrl="https://www.windytan.com/feeds/posts/default" htmlUrl="https://www.windytan.com/"/>
     </outline>
     <outline text="Politics" title="Politics">
-      <outline text="The Smoking Gun RSS" title="The Smoking Gun RSS" type="rss" xmlUrl="https://www.thesmokinggun.com/rss" htmlUrl="http://thesmokinggun.com/documents"/>
+      <outline text="The Smoking Gun RSS" title="The Smoking Gun RSS" type="rss" xmlUrl="https://www.thesmokinggun.com/rss" htmlUrl="https://www.thesmokinggun.com/documents"/>
     </outline>
     <outline text="Programming/Powershell" title="Programming/Powershell">
       <outline text="PowerShell is fun :)" title="PowerShell is fun :)" type="rss" xmlUrl="https://powershellisfun.com/feed/" htmlUrl="https://powershellisfun.com"/>
     </outline>
     <outline text="Programming/Python" title="Programming/Python">
-      <outline text="life is short - you need Python!" title="life is short - you need Python!" type="rss" xmlUrl="https://feeds.feedburner.com/LifeIsShort-YouNeedPython" htmlUrl="http://love-python.blogspot.com/"/>
       <outline text="Miguel Grinberg's Blog" title="Miguel Grinberg's Blog" type="rss" xmlUrl="https://blog.miguelgrinberg.com/feed" htmlUrl="https://blog.miguelgrinberg.com/feed"/>
+      <outline text="life is short - you need Python!" title="life is short - you need Python!" type="rss" xmlUrl="https://feeds.feedburner.com/LifeIsShort-YouNeedPython" htmlUrl="http://love-python.blogspot.com/"/>
     </outline>
     <outline text="Selfhosting" title="Selfhosting">
       <outline text="Update Stream" title="Update Stream">
@@ -71,17 +70,17 @@
       <outline text="Terminal Trove Tool of the Week" title="Terminal Trove Tool of the Week" type="rss" xmlUrl="https://terminaltrove.com/totw.xml" htmlUrl="https://terminaltrove.com"/>
     </outline>
     <outline text="Tech" title="Tech">
+      <outline text="www.theregister.com - Articles" title="www.theregister.com - Articles" type="rss" xmlUrl="https://api.theregister.com/api/v1/article?orderBy=published&amp;site_id=2&amp;remapper=rss" htmlUrl="https://www.theregister.com"/>
+      <outline text="Programster's Blog" title="Programster's Blog" type="rss" xmlUrl="https://blog.programster.org/rss" htmlUrl="https://blog.programster.org"/>
+      <outline text="Ars Technica - All content" title="Ars Technica - All content" type="rss" xmlUrl="https://feeds.arstechnica.com/arstechnica/index" htmlUrl="https://arstechnica.com"/>
+      <outline text="BBC - Technology" title="BBC - Technology" type="rss" xmlUrl="https://feeds.bbci.co.uk/news/technology/rss.xml" htmlUrl="https://www.bbc.co.uk/news/technology"/>
+      <outline text="Linux Journal - The Original Magazine of the Linux Community" title="Linux Journal - The Original Magazine of the Linux Community" type="rss" xmlUrl="https://feeds.feedburner.com/linuxjournalcom" htmlUrl="https://www.linuxjournal.com/"/>
+      <outline text="LazyAdmin" title="LazyAdmin" type="rss" xmlUrl="https://lazyadmin.nl/feed/" htmlUrl="https://lazyadmin.nl/"/>
+      <outline text="Linux Tips, Tricks and Tutorials on Linuxize" title="Linux Tips, Tricks and Tutorials on Linuxize" type="rss" xmlUrl="https://linuxize.com/index.xml" htmlUrl="https://linuxize.com/"/>
       <outline text="Hacker News" title="Hacker News" type="rss" xmlUrl="https://news.ycombinator.com/rss" htmlUrl="https://news.ycombinator.com/"/>
+      <outline text="The Verge" title="The Verge" type="rss" xmlUrl="https://www.theverge.com/rss/index.xml" htmlUrl="https://www.theverge.com"/>
       <outline text="WIRED" title="WIRED" type="rss" xmlUrl="https://www.wired.com/feed/rss" htmlUrl="https://www.wired.com"/>
       <outline text="Latest stories for ZDNET in Open Source" title="Latest stories for ZDNET in Open Source" type="rss" xmlUrl="https://www.zdnet.com/topic/open-source/rss.xml" htmlUrl="https://www.zdnet.com/"/>
-      <outline text="The Verge" title="The Verge" type="rss" xmlUrl="https://www.theverge.com/rss/index.xml" htmlUrl="https://www.theverge.com"/>
-      <outline text="www.theregister.com - Articles" title="www.theregister.com - Articles" type="rss" xmlUrl="https://api.theregister.com/api/v1/article?orderBy=published&amp;site_id=2&amp;remapper=rss" htmlUrl="https://www.theregister.com"/>
-      <outline text="Ars Technica - All content" title="Ars Technica - All content" type="rss" xmlUrl="https://feeds.arstechnica.com/arstechnica/index" htmlUrl="https://arstechnica.com"/>
-      <outline text="LazyAdmin" title="LazyAdmin" type="rss" xmlUrl="https://lazyadmin.nl/feed/" htmlUrl="https://lazyadmin.nl/"/>
-      <outline text="Programster's Blog" title="Programster's Blog" type="rss" xmlUrl="https://blog.programster.org/rss" htmlUrl="https://blog.programster.org"/>
-      <outline text="Linux Tips, Tricks and Tutorials on Linuxize" title="Linux Tips, Tricks and Tutorials on Linuxize" type="rss" xmlUrl="https://linuxize.com/index.xml" htmlUrl="https://linuxize.com/"/>
-      <outline text="Linux Journal - The Original Magazine of the Linux Community" title="Linux Journal - The Original Magazine of the Linux Community" type="rss" xmlUrl="https://feeds.feedburner.com/linuxjournalcom" htmlUrl="https://www.linuxjournal.com/"/>
-      <outline text="BBC - Technology" title="BBC - Technology" type="rss" xmlUrl="https://feeds.bbci.co.uk/news/technology/rss.xml" htmlUrl="https://www.bbc.co.uk/news/technology"/>
     </outline>
     <outline text="Updates Stream" title="Updates Stream">
       <outline text="Vivaldi Browser Updates" title="Vivaldi Browser Updates" type="rss" xmlUrl="https://vivaldi.com/feed/" htmlUrl="https://vivaldi.com"/>
